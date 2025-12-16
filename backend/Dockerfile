@@ -1,13 +1,21 @@
-# Use Python 3.11 slim image (smaller and faster)
+# Use Python 3.11 slim image
 FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for PostgreSQL
-RUN apt-get update && apt-get install -y \
+# Set environment variables to avoid network issues
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PIP_DEFAULT_TIMEOUT=100
+
+# Install system dependencies with retry logic
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get update --fix-missing && \
+    apt-get install -y --no-install-recommends \
     gcc \
     postgresql-client \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first (for Docker caching)
